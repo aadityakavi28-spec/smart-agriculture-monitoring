@@ -1,0 +1,19 @@
+{
+  "name": "smart-agriculture-simulator",
+  "version": "1.0.0",
+  "description": "Sensor data simulator for Smart Agriculture Monitoring System",
+  "main": "sensorSimulator.js",
+  "type": "module",
+  "scripts": {
+    "start": "node sensorSimulator.js"
+  },
+  "keywords": [
+    "sensor",
+    "simulation",
+    "agriculture",
+    "iot"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {}
+}

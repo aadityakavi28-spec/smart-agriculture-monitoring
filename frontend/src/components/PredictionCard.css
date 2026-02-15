@@ -1,0 +1,88 @@
+/**
+ * Prediction Card Styles
+ */
+
+.prediction-card {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-left: 5px solid #667eea;
+}
+
+.prediction-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.prediction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border-left: 3px solid #f0f0f0;
+}
+
+.prediction-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.prediction-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.prediction-value.highlight {
+  color: #667eea;
+  font-size: 1.3rem;
+}
+
+.trend-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.trend-badge[data-trend='declining'] {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.trend-badge[data-trend='rising'] {
+  background: #d4edda;
+  color: #155724;
+}
+
+.trend-badge[data-trend='stable'] {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.prediction-recommendation {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.recommendation-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.recommendation-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.prediction-empty {
+  text-align: center;
+  color: #999;
+  padding: 30px 20px;
+  font-style: italic;
+}

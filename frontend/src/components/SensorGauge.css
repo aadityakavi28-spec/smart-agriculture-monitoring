@@ -1,0 +1,72 @@
+/**
+ * Sensor Gauge Styles
+ */
+
+.sensor-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.gauge {
+  width: 100%;
+  max-width: 300px;
+  position: relative;
+}
+
+.gauge-svg {
+  width: 100%;
+  height: auto;
+}
+
+.gauge-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+}
+
+.gauge-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.gauge-status {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+.sensor-readings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  width: 100%;
+}
+
+.reading {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.reading .label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  opacity: 0.9;
+}
+
+.reading .value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
