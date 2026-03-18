@@ -1,26 +1,16 @@
-// frontend/src/pages/Dashboard.js
-
-/**
- * Main Dashboard Page
- * Orchestrates all components and data management
- */
-
 import React, { useState, useEffect, useCallback } from 'react';
 import SensorGauge from '../components/SensorGauge';
 import HistoricalChart from '../components/HistoricalChart';
 import PredictionCard from '../components/PredictionCard';
 import AlertPanel from '../components/AlertPanel';
 import StatisticsPanel from '../components/StatisticsPanel';
+import ReportGenerator from '../components/ReportGenerator';
 import ThresholdSettings from '../components/ThresholdSettings';
 import { sensorAPI, predictionAPI, alertAPI } from '../services/api';
 import '../styles/global.css';
 import './Dashboard.css';
 
-const Dashboard = () => {
-  // ============================================================
-  // STATE MANAGEMENT
-  // ============================================================
-
+const Dashboard = ({ onLogout, user }) => {
   const [latestReading, setLatestReading] = useState(null);
   const [historicalData, setHistoricalData] = useState([]);
   const [prediction, setPrediction] = useState(null);
@@ -29,10 +19,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
-
-  // ============================================================
-  // DATA FETCHING
-  // ============================================================
 
   const fetchAllData = useCallback(async () => {
     try {
@@ -48,37 +34,49 @@ const Dashboard = () => {
           sensorAPI.getStatistics(),
         ]);
 
-      if (latestRes.data?.success) setLatestReading(latestRes.data.data);
-      if (historyRes.data?.success) setHistoricalData(historyRes.data.data);
-      if (predictionRes.data?.success) setPrediction(predictionRes.data.data);
-      if (alertsRes.data?.success) setAlerts(alertsRes.data.data);
-      if (statsRes.data?.success) setStatistics(statsRes.data.data);
+      if (latestRes.data?.success) {
+        setLatestReading(latestRes.data.data);
+      }
+
+      if (historyRes.data?.success) {
+        setHistoricalData(
+          Array.isArray(historyRes.data.data) ? historyRes.data.data : []
+        );
+      }
+
+      if (predictionRes.data?.success) {
+        setPrediction(predictionRes.data.data);
+      }
+
+      if (alertsRes.data?.success) {
+        setAlerts(
+          Array.isArray(alertsRes.data.data)
+            ? alertsRes.data.data.slice(0, 30)
+            : []
+        );
+      }
+
+      if (statsRes.data?.success) {
+        setStatistics(statsRes.data.data);
+      }
 
       setLastUpdate(new Date());
-      setLoading(false);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Unable to connect. Is the backend running?');
+    } finally {
       setLoading(false);
     }
   }, []);
-
-  // ============================================================
-  // LIFECYCLE
-  // ============================================================
 
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
 
   useEffect(() => {
-    const interval = setInterval(fetchAllData, 30 * 1000);
+    const interval = setInterval(fetchAllData, 30000);
     return () => clearInterval(interval);
   }, [fetchAllData]);
-
-  // ============================================================
-  // HANDLERS
-  // ============================================================
 
   const handleRefresh = async () => {
     await fetchAllData();
@@ -87,26 +85,14 @@ const Dashboard = () => {
   const handleResolveAlert = async (alertId) => {
     try {
       await alertAPI.resolveAlert(alertId);
-      setAlerts(alerts.filter((a) => a._id !== alertId));
+      setAlerts((prev) => prev.filter((a) => a._id !== alertId));
     } catch (err) {
       console.error('Error resolving alert:', err);
     }
   };
 
-  const handleThresholdSave = (thresholds) => {
-    console.log('Thresholds updated:', thresholds);
-    // Thresholds are saved to localStorage inside ThresholdSettings
-    // You can also send them to backend here if needed:
-    // await sensorAPI.updateThresholds(thresholds);
-  };
-
-  // ============================================================
-  // RENDER
-  // ============================================================
-
   return (
     <div className="dashboard">
-      {/* ── Header ─────────────────────────────── */}
       <header className="dashboard-header">
         <div className="header-content">
           <div className="header-left">
@@ -114,14 +100,13 @@ const Dashboard = () => {
             <div className="header-text">
               <h1>Smart Agriculture</h1>
               <p className="header-subtitle">
-                Real-time Soil & Environmental Monitoring
+                Welcome, {user?.name || 'User'} · Real-time Soil & Environmental
+                Monitoring
               </p>
             </div>
           </div>
 
           <div className="header-right">
-            <ThresholdSettings onSave={handleThresholdSave} />
-
             <div className="header-status">
               <span className="status-time">
                 <span className={`status-dot ${error ? 'error' : ''}`} />
@@ -134,6 +119,17 @@ const Dashboard = () => {
               {error && <span className="status-error">{error}</span>}
             </div>
 
+            <ThresholdSettings
+              onSave={(data) => console.log('Thresholds saved:', data)}
+            />
+
+            <ReportGenerator
+              latestReading={latestReading || {}}
+              statistics={statistics || {}}
+              alerts={alerts || []}
+              prediction={prediction || {}}
+            />
+
             <button
               className="refresh-btn"
               onClick={handleRefresh}
@@ -142,16 +138,18 @@ const Dashboard = () => {
               <span className="refresh-icon">⟳</span>
               {loading ? 'Refreshing…' : 'Refresh'}
             </button>
+
+            <button className="btn btn-danger btn-sm" onClick={onLogout}>
+              Logout
+            </button>
           </div>
         </div>
       </header>
 
-      {/* ── Main Content ───────────────────────── */}
       <main className="dashboard-main">
         <div className="container">
-          {/* Row 1: Live Data + Prediction */}
           <div className="section-label">Live Monitoring</div>
-          <div className="dashboard-grid grid-2 animate-fade-in stagger-1">
+          <div className="dashboard-grid grid-2">
             <div className="card">
               <div className="card-header">
                 <h2 className="card-title">
@@ -162,11 +160,12 @@ const Dashboard = () => {
                   <span className="badge badge-success">● Live</span>
                 )}
               </div>
+
               {latestReading ? (
                 <SensorGauge
-                  soilMoisture={latestReading.soilMoisture}
-                  temperature={latestReading.temperature}
-                  humidity={latestReading.humidity}
+                  soilMoisture={latestReading.soilMoisture || 0}
+                  temperature={latestReading.temperature || 0}
+                  humidity={latestReading.humidity || 0}
                 />
               ) : (
                 <div className="empty-state">
@@ -184,9 +183,8 @@ const Dashboard = () => {
             <PredictionCard prediction={prediction} />
           </div>
 
-          {/* Row 2: Historical Chart */}
           <div className="section-label">Trend Analysis</div>
-          <div className="dashboard-section card animate-fade-in stagger-2">
+          <div className="dashboard-section card">
             <div className="card-header">
               <h2 className="card-title">
                 <span className="icon icon-blue">📈</span>
@@ -199,19 +197,18 @@ const Dashboard = () => {
             <HistoricalChart data={historicalData} />
           </div>
 
-          {/* Row 3: Alerts + Statistics */}
           <div className="section-label">Alerts & Statistics</div>
-          <div className="dashboard-grid grid-2 animate-fade-in stagger-3">
-            <AlertPanel
-              alerts={alerts}
-              onResolve={handleResolveAlert}
+          <div className="dashboard-grid grid-2">
+            <AlertPanel alerts={alerts} onResolve={handleResolveAlert} />
+            <StatisticsPanel
+              stats={statistics}
+              latestReading={latestReading}
+              totalReadings={historicalData.length}
             />
-            <StatisticsPanel stats={statistics} />
           </div>
         </div>
       </main>
 
-      {/* ── Footer ─────────────────────────────── */}
       <footer className="dashboard-footer">
         <div className="footer-content">
           <span className="footer-brand">🌱 Smart Agriculture v1.0</span>

@@ -1,12 +1,10 @@
-// backend/src/routes/alertRoutes.js
+import express from 'express';
+import alertController from '../controllers/alertController.js';
 
-const express = require('express');
 const router = express.Router();
-const alertController = require('../controllers/alertController');
 
 router.get('/active', alertController.getActiveAlerts);
 router.get('/history', alertController.getAlertHistory);
 router.put('/:id/resolve', alertController.resolveAlert);
-router.post('/cleanup', alertController.cleanupExpired);
 
-module.exports = router;
+export default router;

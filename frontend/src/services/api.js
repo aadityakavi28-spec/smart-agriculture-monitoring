@@ -19,29 +19,34 @@ const apiClient = axios.create({
 });
 
 // ============================================================
+// AUTH ENDPOINTS
+// ============================================================
+
+export const authAPI = {
+  register: (data) => apiClient.post('/auth/register', data),
+  login: (data) => apiClient.post('/auth/login', data),
+};
+
+// ============================================================
 // SENSOR ENDPOINTS
 // ============================================================
 
 export const sensorAPI = {
-  // Get latest sensor reading
   getLatestReading: () =>
     apiClient.get('/sensors/latest', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID },
     }),
 
-  // Get historical sensor data
   getHistoricalData: (hours = 24) =>
     apiClient.get('/sensors/history', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID, hours },
     }),
 
-  // Get field statistics
   getStatistics: () =>
     apiClient.get('/sensors/statistics', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID },
     }),
 
-  // Record new sensor reading
   recordReading: (data) =>
     apiClient.post('/sensors/data', {
       ...data,
@@ -55,13 +60,11 @@ export const sensorAPI = {
 // ============================================================
 
 export const predictionAPI = {
-  // Get irrigation forecast
   getForecast: () =>
     apiClient.get('/predictions/forecast', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID },
     }),
 
-  // Generate new prediction
   generatePrediction: (hoursToAnalyze = 24) =>
     apiClient.post('/predictions/generate', {
       fieldId: FIELD_ID,
@@ -69,7 +72,6 @@ export const predictionAPI = {
       hoursToAnalyze,
     }),
 
-  // Get trend analysis
   getTrendAnalysis: () =>
     apiClient.get('/predictions/trend', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID },
@@ -81,23 +83,19 @@ export const predictionAPI = {
 // ============================================================
 
 export const alertAPI = {
-  // Get active alerts
   getActiveAlerts: () =>
     apiClient.get('/alerts/active', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID },
     }),
 
-  // Get alert history
   getAlertHistory: (hours = 24) =>
     apiClient.get('/alerts/history', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID, hours },
     }),
 
-  // Resolve alert
   resolveAlert: (alertId) =>
     apiClient.put(`/alerts/${alertId}/resolve`),
 
-  // Get alert statistics
   getAlertStatistics: () =>
     apiClient.get('/alerts/statistics', {
       params: { fieldId: FIELD_ID, farmId: FARM_ID },

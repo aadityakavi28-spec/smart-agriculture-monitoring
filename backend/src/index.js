@@ -12,6 +12,7 @@ import connectDB from './config/database.js';
 import sensorRoutes from './routes/sensorRoutes.js';
 import predictionRoutes from './routes/predictionRoutes.js';
 import alertRoutes from './routes/alertRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -42,7 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 // ============================================================
 // ROUTES
 // ============================================================
-
+app.use('/api/auth', authRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({

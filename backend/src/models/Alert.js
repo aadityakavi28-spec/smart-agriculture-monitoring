@@ -1,108 +1,70 @@
-// backend/src/models/Alert.js
+import mongoose from 'mongoose';
 
-const mongoose = require('mongoose');
+const alertSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      required: true,
+      enum: ['soilMoisture', 'temperature', 'humidity'],
+    },
+    severity: {
+      type: String,
+      required: true,
+      enum: ['critical', 'high', 'medium', 'low'],
+    },
+    message: {
+      type: String,
+      required: true,
+    },
+    value: {
+      type: Number,
+    },
+    threshold: {
+      type: Number,
+    },
+    fieldId: {
+      type: String,
+      default: 'field-1',
+    },
+    farmId: {
+      type: String,
+      default: 'farm-1',
+    },
+    status: {
+      type: String,
+      enum: ['active', 'resolved', 'expired'],
+      default: 'active',
+    },
+    resolvedAt: {
+      type: Date,
+    },
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 5 * 60 * 1000),
+      index: { expires: 0 },
+    },
+  },
+  { timestamps: true }
+);
 
-const alertSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    required: true,
-    enum: ['soilMoisture', 'temperature', 'humidity'],
-  },
-  severity: {
-    type: String,
-    required: true,
-    enum: ['critical', 'high', 'medium', 'low'],
-  },
-  message: {
-    type: String,
-    required: true,
-  },
-  value: {
-    type: Number,
-  },
-  threshold: {
-    type: Number,
-  },
-  fieldId: {
-    type: String,
-    default: 'field-1',
-  },
-  farmId: {
-    type: String,
-    default: 'farm-1',
-  },
-  status: {
-    type: String,
-    enum: ['active', 'resolved', 'expired'],
-    default: 'active',
-  },
-  resolvedAt: {
-    type: Date,
-  },
-  // THIS IS THE KEY FIELD - MongoDB auto-deletes after 5 minutes
-  expiresAt: {
-    type: Date,
-    default: () => new Date(Date.now() + 5 * 60 * 1000), // 5 minutes from now
-    index: { expires: 0 }, // TTL index - MongoDB removes doc when expiresAt passes
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-// ============================================================
-// INDEXES
-// ============================================================
-
-// TTL index handles auto-deletion (already defined above in schema)
-// These indexes speed up common queries
 alertSchema.index({ status: 1, createdAt: -1 });
 alertSchema.index({ farmId: 1, fieldId: 1, status: 1 });
 alertSchema.index({ type: 1, status: 1 });
 
-// ============================================================
-// STATIC METHODS
-// ============================================================
-
-/**
- * Get only non-expired active alerts
- * Extra safety filter in case TTL hasn't cleaned up yet
- */
-alertSchema.statics.getActiveAlerts = function (farmId = 'farm-1', fieldId = 'field-1') {
+alertSchema.statics.getActiveAlerts = function (
+  farmId = 'farm-1',
+  fieldId = 'field-1'
+) {
   return this.find({
     farmId,
     fieldId,
     status: 'active',
-    expiresAt: { $gt: new Date() }, // Only alerts that haven't expired
+    expiresAt: { $gt: new Date() },
   })
     .sort({ createdAt: -1 })
-    .limit(20);
+    .limit(30);
 };
 
-/**
- * Manually expire all old alerts (cleanup utility)
- */
-alertSchema.statics.expireOldAlerts = async function (minutesOld = 5) {
-  const cutoff = new Date(Date.now() - minutesOld * 60 * 1000);
-
-  const result = await this.updateMany(
-    {
-      status: 'active',
-      createdAt: { $lt: cutoff },
-    },
-    {
-      $set: { status: 'expired' },
-    }
-  );
-
-  return result.modifiedCount;
-};
-
-/**
- * Create alert only if no duplicate exists in last 2 minutes
- * Prevents alert spam
- */
 alertSchema.statics.createIfNotDuplicate = async function (alertData) {
   const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
 
@@ -127,4 +89,6 @@ alertSchema.statics.createIfNotDuplicate = async function (alertData) {
   return { created: true, alert: newAlert };
 };
 
-module.exports = mongoose.model('Alert', alertSchema);
+const Alert = mongoose.model('Alert', alertSchema);
+
+export default Alert;
