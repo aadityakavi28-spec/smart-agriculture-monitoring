@@ -62,6 +62,9 @@ app.use('/api/predictions', predictionRoutes);
 // Alert API routes
 app.use('/api/alerts', alertRoutes);
 
+app.use('/api/auth', authRoutes);
+
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({

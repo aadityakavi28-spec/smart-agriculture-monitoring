@@ -11,6 +11,14 @@ function App() {
 
   const [authMode, setAuthMode] = useState('login');
 
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleRegister = (userData) => {
+    setUser(userData);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -21,12 +29,12 @@ function App() {
   if (!user) {
     return authMode === 'login' ? (
       <Login
-        onLogin={setUser}
+        onLogin={handleLogin}
         goToRegister={() => setAuthMode('register')}
       />
     ) : (
       <Register
-        onRegister={setUser}
+        onRegister={handleRegister}
         goToLogin={() => setAuthMode('login')}
       />
     );

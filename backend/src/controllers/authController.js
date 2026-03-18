@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  const secret = process.env.JWT_SECRET || 'smart_agriculture_fallback_secret';
+  return jwt.sign({ id }, secret, { expiresIn: '7d' });
 };
 
 // Register User
@@ -19,6 +20,7 @@ const register = async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -67,6 +69,7 @@ const login = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -75,6 +78,7 @@ const login = async (req, res) => {
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
     if (!isPasswordCorrect) {
       return res.status(401).json({
         success: false,
