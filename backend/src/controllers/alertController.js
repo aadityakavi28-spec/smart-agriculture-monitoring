@@ -1,127 +1,116 @@
-/**
- * Alert Controller
- * Handles HTTP requests for alert operations
- */
+// backend/src/controllers/alertController.js
 
-import AlertService from '../services/alertService.js';
+const Alert = require('../models/Alert');
 
-class AlertController {
-  /**
-   * GET /api/alerts/active
-   * Get all active alerts for a field
-   */
-  static async getActiveAlerts(req, res) {
+const alertController = {
+  // ============================================================
+  // GET ACTIVE ALERTS (only non-expired)
+  // ============================================================
+  getActiveAlerts: async (req, res) => {
     try {
-      const { fieldId = 'field_001', farmId = 'farm_001' } = req.query;
+      const { farmId = 'farm-1', fieldId = 'field-1' } = req.query;
 
-      const alerts = await AlertService.getActiveAlerts(fieldId, farmId);
+      const alerts = await Alert.getActiveAlerts(farmId, fieldId);
 
-      res.status(200).json({
+      res.json({
         success: true,
-        alertCount: alerts.length,
         data: alerts,
+        count: alerts.length,
+        message: `${alerts.length} active alert(s)`,
       });
     } catch (error) {
       console.error('Error fetching active alerts:', error);
       res.status(500).json({
         success: false,
-        message: 'Error fetching alerts',
-        error: error.message,
+        error: 'Failed to fetch alerts',
       });
     }
-  }
+  },
 
-  /**
-   * GET /api/alerts/history
-   * Get alert history for time range
-   */
-  static async getAlertHistory(req, res) {
+  // ============================================================
+  // GET ALERT HISTORY (includes expired)
+  // ============================================================
+  getAlertHistory: async (req, res) => {
     try {
-      const { fieldId = 'field_001', farmId = 'farm_001', hours = 24 } = req.query;
+      const { farmId = 'farm-1', limit = 50 } = req.query;
 
-      const alerts = await AlertService.getAlertHistory(
-        fieldId,
-        parseInt(hours),
-        farmId
-      );
+      // For history, query before TTL deletes them
+      // Or use a separate history collection (see enhancement below)
+      const alerts = await Alert.find({ farmId })
+        .sort({ createdAt: -1 })
+        .limit(parseInt(limit));
 
-      res.status(200).json({
+      res.json({
         success: true,
-        alertCount: alerts.length,
         data: alerts,
+        count: alerts.length,
       });
     } catch (error) {
       console.error('Error fetching alert history:', error);
       res.status(500).json({
         success: false,
-        message: 'Error fetching alert history',
-        error: error.message,
+        error: 'Failed to fetch alert history',
       });
     }
-  }
+  },
 
-  /**
-   * PUT /api/alerts/:alertId/resolve
-   * Mark alert as resolved
-   */
-  static async resolveAlert(req, res) {
+  // ============================================================
+  // RESOLVE ALERT MANUALLY
+  // ============================================================
+  resolveAlert: async (req, res) => {
     try {
-      const { alertId } = req.params;
+      const { id } = req.params;
 
-      if (!alertId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Alert ID is required',
-        });
-      }
-
-      const alert = await AlertService.resolveAlert(alertId);
+      const alert = await Alert.findByIdAndUpdate(
+        id,
+        {
+          status: 'resolved',
+          resolvedAt: new Date(),
+        },
+        { new: true }
+      );
 
       if (!alert) {
         return res.status(404).json({
           success: false,
-          message: 'Alert not found',
+          error: 'Alert not found (may have already expired)',
         });
       }
 
-      res.status(200).json({
+      res.json({
         success: true,
-        message: 'Alert resolved successfully',
         data: alert,
+        message: 'Alert resolved',
       });
     } catch (error) {
       console.error('Error resolving alert:', error);
       res.status(500).json({
         success: false,
-        message: 'Error resolving alert',
-        error: error.message,
+        error: 'Failed to resolve alert',
       });
     }
-  }
+  },
 
-  /**
-   * GET /api/alerts/statistics
-   * Get alert statistics
-   */
-  static async getAlertStatistics(req, res) {
+  // ============================================================
+  // MANUAL CLEANUP (admin endpoint)
+  // ============================================================
+  cleanupExpired: async (req, res) => {
     try {
-      const { fieldId = 'field_001', farmId = 'farm_001' } = req.query;
+      const count = await Alert.expireOldAlerts(5);
 
-      const stats = await AlertService.getAlertStatistics(fieldId, farmId);
-
-      res.status(200).json({
+      res.json({
         success: true,
-        data: stats,
+        message: `Expired ${count} old alerts`,
+        expiredCount: count,
       });
     } catch (error) {
-      console.error('Error fetching alert statistics:', error);
+      console.error('Error cleaning up alerts:', error);
       res.status(500).json({
         success: false,
-        message: 'Error fetching statistics',
-        error: error.message,
+        error: 'Failed to cleanup alerts',
       });
     }
-  }
-}
+  },
+};
 
-export default AlertController;
+module.exports = alertController;

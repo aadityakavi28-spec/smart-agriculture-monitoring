@@ -1,18 +1,122 @@
 /**
- * Historical Chart Styles
+ * HistoricalChart Component Styles
  */
 
-.chart-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.historical-chart {
+  padding: var(--space-2) 0;
 }
 
-.chart-empty {
-  font-size: 1.1rem;
-  color: #999;
-  text-align: center;
-  padding: 40px;
+/* ── Metric Toggle ─────────────────────── */
+
+.chart-toggle {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  padding: var(--space-1);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+  width: fit-content;
+}
+
+.chart-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.chart-toggle-btn:hover {
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-100);
+}
+
+.chart-toggle-btn.active {
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-800);
+  box-shadow: var(--shadow-sm);
+}
+
+.chart-toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Chart Container ───────────────────── */
+
+.chart-wrapper {
+  margin: 0 calc(-1 * var(--space-2));
+}
+
+/* ── Custom Tooltip ────────────────────── */
+
+.chart-tooltip {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-lg);
+  min-width: 140px;
+}
+
+.chart-tooltip-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-neutral-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-2);
+}
+
+.chart-tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 2px 0;
+}
+
+.chart-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chart-tooltip-name {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  font-weight: 500;
+}
+
+.chart-tooltip-value {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+/* ── Responsive ────────────────────────── */
+
+@media (max-width: 480px) {
+  .chart-toggle {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .chart-toggle-btn {
+    font-size: 0.75rem;
+    padding: var(--space-2);
+    flex-shrink: 0;
+  }
 }

@@ -1,149 +1,103 @@
+// backend/src/controllers/sensorController.js
+// ADD this function or update your existing recordSensorData
+
+const Alert = require('../models/Alert');
+
 /**
- * Sensor Controller
- * Handles HTTP requests for sensor data operations
+ * Generate alerts based on sensor thresholds
+ * Called after every sensor reading is saved
  */
+const checkAndGenerateAlerts = async (sensorData) => {
+  const alertsToCreate = [];
 
-import SensorDataService from '../services/sensorDataService.js';
-import PredictionService from '../services/predictionService.js';
-
-class SensorController {
-  /**
-   * POST /api/sensors/data
-   * Receive and store new sensor reading
-   */
-  static async recordSensorData(req, res) {
-    try {
-      const { soilMoisture, temperature, humidity, fieldId, farmId } = req.body;
-
-      // Validation
-      if (soilMoisture === undefined || temperature === undefined || humidity === undefined) {
-        return res.status(400).json({
-          success: false,
-          message: 'Missing required fields: soilMoisture, temperature, humidity',
-        });
-      }
-
-      // Save sensor reading
-      const sensorData = await SensorDataService.saveSensorReading({
-        soilMoisture,
-        temperature,
-        humidity,
-        fieldId: fieldId || 'field_001',
-        farmId: farmId || 'farm_001',
-        source: 'simulated', // or 'hardware' if from real sensors
-      });
-
-      // Generate alert if needed (async, no need to await)
-      PredictionService.generateAlertIfNeeded(
-        fieldId || 'field_001',
-        farmId || 'farm_001'
-      ).catch(err => console.error('Error generating alert:', err));
-
-      res.status(201).json({
-        success: true,
-        message: 'Sensor data recorded successfully',
-        data: sensorData,
-      });
-    } catch (error) {
-      console.error('Error recording sensor data:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error recording sensor data',
-        error: error.message,
-      });
-    }
+  // ── Soil Moisture Checks ────────────────────
+  if (sensorData.soilMoisture <= 20) {
+    alertsToCreate.push({
+      type: 'soilMoisture',
+      severity: 'critical',
+      message: `Soil moisture critically low at ${sensorData.soilMoisture.toFixed(1)}%. Immediate irrigation required!`,
+      value: sensorData.soilMoisture,
+      threshold: 20,
+    });
+  } else if (sensorData.soilMoisture <= 30) {
+    alertsToCreate.push({
+      type: 'soilMoisture',
+      severity: 'high',
+      message: `Soil moisture low at ${sensorData.soilMoisture.toFixed(1)}%. Consider irrigating soon.`,
+      value: sensorData.soilMoisture,
+      threshold: 30,
+    });
+  } else if (sensorData.soilMoisture > 85) {
+    alertsToCreate.push({
+      type: 'soilMoisture',
+      severity: 'medium',
+      message: `Soil moisture very high at ${sensorData.soilMoisture.toFixed(1)}%. Possible overwatering.`,
+      value: sensorData.soilMoisture,
+      threshold: 85,
+    });
   }
 
-  /**
-   * GET /api/sensors/latest
-   * Get latest sensor reading for a field
-   */
-  static async getLatestReading(req, res) {
-    try {
-      const { fieldId = 'field_001', farmId = 'farm_001' } = req.query;
-
-      const reading = await SensorDataService.getLatestReading(fieldId, farmId);
-
-      if (!reading) {
-        return res.status(404).json({
-          success: false,
-          message: 'No sensor data found for this field',
-        });
-      }
-
-      res.status(200).json({
-        success: true,
-        data: reading,
-      });
-    } catch (error) {
-      console.error('Error fetching latest reading:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error fetching sensor data',
-        error: error.message,
-      });
-    }
+  // ── Temperature Checks ──────────────────────
+  if (sensorData.temperature > 40) {
+    alertsToCreate.push({
+      type: 'temperature',
+      severity: 'critical',
+      message: `Extreme heat detected: ${sensorData.temperature.toFixed(1)}°C. Crops at risk!`,
+      value: sensorData.temperature,
+      threshold: 40,
+    });
+  } else if (sensorData.temperature > 35) {
+    alertsToCreate.push({
+      type: 'temperature',
+      severity: 'high',
+      message: `High temperature: ${sensorData.temperature.toFixed(1)}°C. Monitor crop stress.`,
+      value: sensorData.temperature,
+      threshold: 35,
+    });
+  } else if (sensorData.temperature < 5) {
+    alertsToCreate.push({
+      type: 'temperature',
+      severity: 'critical',
+      message: `Frost risk! Temperature at ${sensorData.temperature.toFixed(1)}°C.`,
+      value: sensorData.temperature,
+      threshold: 5,
+    });
   }
 
-  /**
-   * GET /api/sensors/history
-   * Get historical sensor data for time range
-   */
-  static async getHistoricalData(req, res) {
-    try {
-      const { fieldId = 'field_001', farmId = 'farm_001', hours = 24 } = req.query;
-
-      const data = await SensorDataService.getHistoricalData(
-        fieldId,
-        parseInt(hours),
-        farmId
-      );
-
-      res.status(200).json({
-        success: true,
-        dataPoints: data.length,
-        data,
-      });
-    } catch (error) {
-      console.error('Error fetching historical data:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error fetching historical data',
-        error: error.message,
-      });
-    }
+  // ── Humidity Checks ─────────────────────────
+  if (sensorData.humidity > 90) {
+    alertsToCreate.push({
+      type: 'humidity',
+      severity: 'medium',
+      message: `Very high humidity: ${sensorData.humidity.toFixed(1)}%. Disease risk elevated.`,
+      value: sensorData.humidity,
+      threshold: 90,
+    });
+  } else if (sensorData.humidity < 20) {
+    alertsToCreate.push({
+      type: 'humidity',
+      severity: 'high',
+      message: `Very low humidity: ${sensorData.humidity.toFixed(1)}%. Crop dehydration risk.`,
+      value: sensorData.humidity,
+      threshold: 20,
+    });
   }
 
-  /**
-   * GET /api/sensors/statistics
-   * Get statistical summary for a field
-   */
-  static async getStatistics(req, res) {
-    try {
-      const { fieldId = 'field_001', farmId = 'farm_001' } = req.query;
-
-      const stats = await SensorDataService.getFieldStatistics(fieldId, farmId);
-
-      if (!stats) {
-        return res.status(404).json({
-          success: false,
-          message: 'No statistical data available',
-        });
-      }
-
-      res.status(200).json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      console.error('Error fetching statistics:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error fetching statistics',
-        error: error.message,
-      });
-    }
+  // ── Create Alerts (with duplicate prevention) ──
+  const results = [];
+  for (const alertData of alertsToCreate) {
+    const result = await Alert.createIfNotDuplicate(alertData);
+    results.push(result);
   }
-}
 
-export default SensorController;
+  return results;
+};
+
+// USE this in your recordSensorData function:
+// const recordSensorData = async (req, res) => {
+//   ... save sensor data ...
+//   await checkAndGenerateAlerts(savedData);
+//   ... send response ...
+// };
+
+module.exports = { checkAndGenerateAlerts };

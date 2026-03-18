@@ -1,107 +1,185 @@
 /**
- * Alert Panel Styles
+ * AlertPanel Component Styles - With Expiry Animation
  */
 
 .alert-panel {
-  max-height: 500px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.alert-empty {
-  text-align: center;
-  color: #28a745;
-  padding: 40px 20px;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.alerts-list {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.alert-item {
-  background: #f8f9fa;
-  border-left: 4px solid #fd7e14;
-  padding: 12px;
-  border-radius: 6px;
-  animation: slideIn 0.3s ease;
-}
-
-.alert-item:hover {
-  background: #fff3cd;
-  border-left-color: #dc3545;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.alert-item[data-severity='critical'] {
-  border-left-color: #dc3545;
-  background: #ffe6e6;
-}
-
-.alert-header {
+.alert-header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
-.alert-icon {
-  font-size: 1.3rem;
-}
-
-.alert-message {
-  font-size: 0.95rem;
-  color: #333;
+.alert-auto-label {
+  font-size: 0.6875rem;
+  color: var(--color-neutral-400);
   font-weight: 500;
-  margin-bottom: 8px;
-  line-height: 1.4;
+  font-style: italic;
 }
 
-.alert-details {
+.alert-list {
   display: flex;
-  gap: 15px;
-  font-size: 0.85rem;
-  color: #666;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+/* ── Alert Item ────────────────────────── */
+
+.alert-item {
+  border-radius: var(--radius-md);
+  background: var(--alert-bg);
+  border: 1px solid var(--alert-border);
+  overflow: hidden;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.alert-item.alert-fading {
+  opacity: 0.5;
+  animation: alert-fade-out 1s ease-in-out infinite alternate;
+}
+
+@keyframes alert-fade-out {
+  0% { opacity: 0.5; }
+  100% { opacity: 0.3; }
+}
+
+/* ── Expiry Progress Bar ───────────────── */
+
+.alert-expiry-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--color-neutral-100);
+}
+
+.alert-expiry-fill {
+  height: 100%;
+  transition: width 10s linear;
+  opacity: 0.6;
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+
+/* ── Alert Body ────────────────────────── */
+
+.alert-body {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.alert-indicator {
+  width: 3px;
+  border-radius: var(--radius-full);
+  background: var(--alert-color);
+  flex-shrink: 0;
+  margin: var(--space-1) 0;
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+  gap: var(--space-2);
+}
+
+.alert-severity {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--alert-color);
+  flex-shrink: 0;
+}
+
+.alert-time-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
 .alert-time {
-  font-size: 0.8rem;
-  color: #999;
-  margin-left: auto;
+  font-size: 0.6875rem;
+  color: var(--color-neutral-400);
+  font-weight: 500;
 }
 
-/* Scrollbar styling */
-.alerts-list::-webkit-scrollbar {
-  width: 6px;
+.alert-countdown {
+  font-size: 0.625rem;
+  color: var(--color-neutral-400);
+  font-family: var(--font-mono);
+  font-weight: 500;
 }
 
-.alerts-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+.alert-message {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-700);
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: var(--space-1);
 }
 
-.alerts-list::-webkit-scrollbar-thumb {
-  background: #667eea;
-  border-radius: 3px;
+.alert-value {
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+  font-family: var(--font-mono);
+  font-weight: 500;
 }
 
-.alerts-list::-webkit-scrollbar-thumb:hover {
-  background: #764ba2;
+/* ── Resolve Button ────────────────────── */
+
+.alert-resolve-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-400);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.alert-resolve-btn:hover {
+  background: var(--color-danger-500);
+  color: white;
+  border-color: var(--color-danger-500);
+}
+
+/* ── Responsive ────────────────────────── */
+
+@media (max-width: 480px) {
+  .alert-top {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .alert-time-info {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .alert-header-right {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+  }
 }
