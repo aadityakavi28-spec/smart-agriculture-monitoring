@@ -19,6 +19,13 @@ const register = async (req, res) => {
       });
     }
 
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters',
+      });
+    }
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -34,6 +41,10 @@ const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: 'user',
+      lastLogin: new Date(),
+      loginCount: 1,
+      isActive: true,
     });
 
     return res.status(201).json({
@@ -43,6 +54,7 @@ const register = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         token: generateToken(user._id),
       },
     });
@@ -77,6 +89,13 @@ const login = async (req, res) => {
       });
     }
 
+    if (!user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Account is inactive',
+      });
+    }
+
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
@@ -86,6 +105,12 @@ const login = async (req, res) => {
       });
     }
 
+    // Update last login and increment login count
+    user.lastLogin = new Date();
+    user.loginCount = (user.loginCount || 0) + 1;
+    user.lastActivity = new Date();
+    await user.save();
+
     return res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -93,6 +118,8 @@ const login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
+        loginCount: user.loginCount,
         token: generateToken(user._id),
       },
     });

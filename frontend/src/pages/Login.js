@@ -6,6 +6,7 @@ const Login = ({ onLogin, goToRegister }) => {
     email: '',
     password: '',
   });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +19,7 @@ const Login = ({ onLogin, goToRegister }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       setLoading(true);
       setError('');
@@ -66,7 +68,7 @@ const Login = ({ onLogin, goToRegister }) => {
         </button>
 
         <p style={styles.linkText}>
-          Don’t have an account?{' '}
+          Don&apos;t have an account?{' '}
           <span style={styles.link} onClick={goToRegister}>
             Register
           </span>
@@ -117,6 +119,7 @@ const styles = {
   error: {
     color: 'red',
     fontSize: '0.9rem',
+    textAlign: 'center',
   },
   linkText: {
     textAlign: 'center',

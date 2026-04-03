@@ -7,6 +7,7 @@ const Register = ({ onRegister, goToLogin }) => {
     email: '',
     password: '',
   });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,6 +20,7 @@ const Register = ({ onRegister, goToLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       setLoading(true);
       setError('');
@@ -127,6 +129,7 @@ const styles = {
   error: {
     color: 'red',
     fontSize: '0.9rem',
+    textAlign: 'center',
   },
   linkText: {
     textAlign: 'center',

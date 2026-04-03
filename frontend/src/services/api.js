@@ -110,4 +110,15 @@ export const healthAPI = {
   checkHealth: () => apiClient.get('/health'),
 };
 
+// ============================================================
+// ADMIN ENDPOINTS
+// ============================================================
+
+export const adminAPI = {
+  getAllUsers: () => apiClient.get('/admin/users'),
+  getUserStats: () => apiClient.get('/admin/stats'),
+  toggleUserStatus: (userId) => apiClient.put(`/admin/users/${userId}/toggle-status`),
+  changeUserRole: (userId, role) => apiClient.put(`/admin/users/${userId}/role`, { role }),
+};
+
 export default apiClient;

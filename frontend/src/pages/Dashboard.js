@@ -10,7 +10,7 @@ import { sensorAPI, predictionAPI, alertAPI } from '../services/api';
 import '../styles/global.css';
 import './Dashboard.css';
 
-const Dashboard = ({ onLogout, user }) => {
+const Dashboard = ({ onLogout, user, onNavigate }) => {
   const [latestReading, setLatestReading] = useState(null);
   const [historicalData, setHistoricalData] = useState([]);
   const [prediction, setPrediction] = useState(null);
@@ -137,6 +137,24 @@ const Dashboard = ({ onLogout, user }) => {
             >
               <span className="refresh-icon">⟳</span>
               {loading ? 'Refreshing…' : 'Refresh'}
+            </button>
+
+            {user?.role === 'admin' && (
+              <button 
+                className="btn btn-info btn-sm"
+                onClick={() => onNavigate && onNavigate('admin')}
+                title="Admin Dashboard"
+              >
+                👨‍💼 Admin
+              </button>
+            )}
+
+            <button 
+              className="btn btn-info btn-sm"
+              onClick={() => onNavigate && onNavigate('profile')}
+              title="View Profile"
+            >
+              👤 Profile
             </button>
 
             <button className="btn btn-danger btn-sm" onClick={onLogout}>
